@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+a.active hr{
+    display: block;   /*This CSS class is added to show the underline in Nav menu only when clicked on it.*/
+}
