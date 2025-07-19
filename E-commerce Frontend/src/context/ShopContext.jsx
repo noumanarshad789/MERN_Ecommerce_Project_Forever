@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react'
 import { products } from '../assets/assets'
 import { toast } from 'react-toastify'
+import axios from "axios"
 import { useNavigate } from 'react-router-dom'
 
 export const ShopContext = createContext()
@@ -9,9 +10,11 @@ const ShopContextProvider = ({ children }) => {
 
   const currency = "$"
   const delivery_fee = 10
+  const backendUrl = import.meta.env.VITE_BACKEND_URL
   const [search, setSearch] = useState("")
   const [showSearch, setShowSearch] = useState(false)
   const [cartItems, setCartItems] = useState({})
+  const [products, setProducts] = useState([])
   const navigate = useNavigate()
 
 
@@ -54,7 +57,7 @@ const ShopContextProvider = ({ children }) => {
             totalCount += cartItems[items][item]
           }
         } catch (error) {
-
+          console.log(error)
         }
       }
     }
@@ -72,7 +75,7 @@ const ShopContextProvider = ({ children }) => {
         {
           try {
             if (cartItems[items][item] > 0) {
-              totalAmount += itemInfo.price * cartItems[items][item] 
+              totalAmount += itemInfo.price * cartItems[items][item]
             }
           } catch (error) {
 
@@ -84,14 +87,31 @@ const ShopContextProvider = ({ children }) => {
     return totalAmount
   }
 
+  const getProductData = async () => {
+    try {
+      const response = await axios.get(backendUrl + "/api/product/list")
+      console.log(response.data)
+      if (response.data.success) {
+        setProducts(response.data.products)
+      } else {
+        toast.error(response.data.message)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+
+    }
+  }
+  useEffect(() => { getProductData()}, [])
+
   const value = {
     products,
     currency, delivery_fee,
     search, setSearch, showSearch, setShowSearch,
     cartItems, addToCart,
     getCartCount,
-    updateCartQuantity, 
-    getCartAmount, navigate
+    updateCartQuantity,
+    getCartAmount, navigate, backendUrl
   }
 
   return (
