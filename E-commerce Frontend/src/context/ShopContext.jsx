@@ -1,5 +1,4 @@
 import React, { createContext, useEffect, useState } from 'react'
-import { products } from '../assets/assets'
 import { toast } from 'react-toastify'
 import axios from "axios"
 import { useNavigate } from 'react-router-dom'
@@ -15,6 +14,7 @@ const ShopContextProvider = ({ children }) => {
   const [showSearch, setShowSearch] = useState(false)
   const [cartItems, setCartItems] = useState({})
   const [products, setProducts] = useState([])
+  const [token, setToken] = useState("")
   const navigate = useNavigate()
 
 
@@ -39,6 +39,17 @@ const ShopContextProvider = ({ children }) => {
       cartData[itemId][size] = 1
     }
     setCartItems(cartData)
+
+    if (token) {
+      try {
+        await axios.post(backendUrl + "/api/cart/add", { itemId, size }, { headers: { token } })
+      } catch (error) {
+        console.log(error)
+        toast.error(error)
+      }
+    } else {
+
+    }
   }
 
   const updateCartQuantity = async (itemId, size, quantity) => {
@@ -46,6 +57,27 @@ const ShopContextProvider = ({ children }) => {
     cartData[itemId][size] = quantity
 
     setCartItems(cartData)
+
+    if (token) {
+      try {
+        await axios.post(backendUrl + "/api/cart/update", { itemId, size, quantity }, { headers: { token } })
+      } catch (error) {
+        console.log(error)
+        toast.error(error)
+      }
+    }
+  }
+
+  const getUserCart = async (token) => {
+    try {
+      const response = await axios.post(backendUrl + "/api/cart/get", {}, { headers: { token } })
+      if (response.data.success) {
+        setCartItems(response.data.cartData)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error)
+    }
   }
 
   const getCartCount = () => {
@@ -90,7 +122,7 @@ const ShopContextProvider = ({ children }) => {
   const getProductData = async () => {
     try {
       const response = await axios.get(backendUrl + "/api/product/list")
-      console.log(response.data)
+      // console.log(response.data)
       if (response.data.success) {
         setProducts(response.data.products)
       } else {
@@ -102,7 +134,26 @@ const ShopContextProvider = ({ children }) => {
 
     }
   }
-  useEffect(() => { getProductData()}, [])
+  useEffect(() => { getProductData() }, [])
+
+
+  useEffect(() => {
+    if (!token && localStorage.getItem("token")) {
+      setToken(localStorage.getItem("token"))
+      getUserCart(localStorage.getItem("token"))
+    }
+  }, [])
+
+
+
+
+
+
+
+
+
+
+
 
   const value = {
     products,
@@ -111,7 +162,8 @@ const ShopContextProvider = ({ children }) => {
     cartItems, addToCart,
     getCartCount,
     updateCartQuantity,
-    getCartAmount, navigate, backendUrl
+    getCartAmount, navigate, backendUrl,
+    token, setToken, setCartItems
   }
 
   return (

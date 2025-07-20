@@ -13,7 +13,7 @@ const BestSeller = () => {
         const bestSellerProducts = products.filter((item)=>(item.bestseller))
         setBestSeller(bestSellerProducts.slice(0,5))    
     },[products])
-
+    
 
 
     return (
