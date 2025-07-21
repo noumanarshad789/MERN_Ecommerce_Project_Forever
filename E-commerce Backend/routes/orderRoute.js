@@ -18,7 +18,7 @@ orderRouter.post("/razorpay", userAuth, placeOrderRazorpay)
 
 
 // User Feacture(User Authentication)
-orderRouter.post("/userorder", userAuth, userOrders)
+orderRouter.post("/userorders", userAuth, userOrders)
 
 
-export default orderRouter
+export default orderRouter  
